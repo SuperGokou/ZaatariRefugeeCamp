@@ -5,11 +5,116 @@
 
 /* Color Variables */
 :root {
-    --color-primary: #327972;
-    --color-accent: #ff4500;
-    --color-gray-light: #ccc;
+    --color-primary: #2d6a6a;
+    --color-primary-light: #3d8a8a;
+    --color-accent: #e85d04;
+    --color-accent-light: #f48c06;
+    --color-gray-light: #e0e0e0;
+    --color-gray-medium: #888;
     --color-gray-dark: #333;
-    --color-axis: #888;
+    --color-background: #fafafa;
+    --color-white: #ffffff;
+    --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.12);
+    --transition-fast: 0.2s ease;
+    --transition-medium: 0.3s ease;
+}
+
+/***********************
+ * Base Styles
+ ***********************/
+
+body {
+    background-color: var(--color-background);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/***********************
+ * Header Banner
+ ***********************/
+
+.header-banner {
+    width: 100%;
+    min-height: 160px;
+    background-image: url('../img/example.jpg');
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.header-banner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(45, 106, 106, 0.7), rgba(45, 106, 106, 0.4));
+}
+
+.header-title {
+    position: relative;
+    z-index: 1;
+    padding: 1rem 2rem;
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.header-title mark {
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--color-primary);
+    padding: 0.4em 0.8em;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    border-radius: 6px;
+    box-shadow: var(--shadow-soft);
+}
+
+/***********************
+ * Charts Container
+ ***********************/
+
+.charts-container {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    display: flex;
+    flex-wrap: nowrap;
+}
+
+.chart-column {
+    flex: 1;
+    text-align: center;
+    padding: 1.5rem 1rem;
+    background: var(--color-white);
+    border-radius: 8px;
+    box-shadow: var(--shadow-soft);
+    margin: 0 0.5rem;
+    transition: box-shadow var(--transition-medium);
+}
+
+.chart-column:hover {
+    box-shadow: var(--shadow-medium);
+}
+
+.chart-column-left {
+    border-right: none;
+}
+
+/***********************
+ * SVG Charts - Responsive
+ ***********************/
+
+#areaChart,
+#barChart {
+    width: 100%;
+}
+
+#areaChart svg,
+#barChart svg {
+    width: 100%;
+    height: auto;
 }
 
 /***********************
@@ -18,7 +123,8 @@
 
 .bar {
     fill: var(--color-gray-light);
-    transition: fill 0.2s ease;
+    transition: fill var(--transition-fast), transform var(--transition-fast);
+    cursor: pointer;
 }
 
 .bar:hover {
@@ -26,8 +132,9 @@
 }
 
 .percentage-label {
-    font-family: Arial, sans-serif;
-    font-size: 12px;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
     fill: var(--color-gray-dark);
 }
 
@@ -36,15 +143,20 @@
  ***********************/
 
 .area {
+    fill: url(#areaGradient);
+    opacity: 0.8;
+}
+
+.area-fallback {
     fill: var(--color-gray-light);
-    stroke: var(--color-gray-dark);
-    stroke-width: 1;
 }
 
 .line {
     fill: none;
     stroke: var(--color-accent);
-    stroke-width: 2;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }
 
 /***********************
@@ -52,19 +164,23 @@
  ***********************/
 
 .axis {
-    font: 10px sans-serif;
+    font: 11px 'Segoe UI', system-ui, sans-serif;
 }
 
 .axis path,
 .axis line {
     fill: none;
-    stroke: #000;
+    stroke: var(--color-gray-light);
     shape-rendering: crispEdges;
 }
 
+.axis text {
+    fill: var(--color-gray-medium);
+}
+
 .axis-label {
-    fill: var(--color-axis);
-    font-size: 10px;
+    fill: var(--color-gray-medium);
+    font-size: 11px;
 }
 
 /***********************
@@ -72,44 +188,150 @@
  ***********************/
 
 .chart-title {
-    font-family: Arial, sans-serif;
-    font-weight: bold;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    fill: var(--color-gray-dark);
 }
 
 /***********************
  * Tooltip
  ***********************/
 
-#tooltip {
-    position: absolute;
-    width: 100px;
-    height: auto;
-    padding: 10px;
-    background-color: white;
-    border-radius: 10px;
-    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+.tooltip-group {
     pointer-events: none;
 }
 
-#tooltip.hidden {
+.tooltip-line {
+    stroke: var(--color-primary);
+    stroke-width: 1.5px;
+    stroke-dasharray: 4, 4;
+}
+
+.tooltip-circle {
+    fill: var(--color-accent);
+    stroke: var(--color-white);
+    stroke-width: 2px;
+}
+
+.tooltip-bg {
+    fill: var(--color-white);
+    stroke: var(--color-gray-light);
+    stroke-width: 1px;
+    rx: 6;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.tooltip-date {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 11px;
+    fill: var(--color-gray-medium);
+}
+
+.tooltip-population {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    fill: var(--color-gray-dark);
+}
+
+/* Legacy tooltip (hidden) */
+#tooltip {
     display: none;
 }
 
-#tooltip p {
-    margin: 0;
-    font-family: sans-serif;
-    font-size: 16px;
-    line-height: 20px;
+/***********************
+ * Overlay
+ ***********************/
+
+.overlay {
+    fill: transparent;
+    pointer-events: all;
+    cursor: crosshair;
 }
 
-.tooltip-line {
-    stroke: var(--color-gray-dark);
-    stroke-dasharray: 3, 3;
+/***********************
+ * Animations
+ ***********************/
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.tooltip-date,
-.tooltip-population {
-    font-family: Arial, sans-serif;
-    font-size: 12px;
-    font-weight: bold;
+.chart-column {
+    animation: fadeInUp 0.6s ease-out backwards;
+}
+
+.chart-column:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.chart-column:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+/***********************
+ * Responsive Design
+ ***********************/
+
+@media (max-width: 600px) {
+    .charts-container {
+        flex-direction: column;
+        flex-wrap: wrap;
+    }
+
+    .chart-column {
+        margin: 0.25rem 0;
+        flex: none;
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-banner {
+        min-height: 140px;
+    }
+
+    .header-title {
+        padding: 1rem;
+    }
+
+    .header-title mark {
+        font-size: 1.2rem;
+        padding: 0.3em 0.6em;
+    }
+
+    .chart-column {
+        padding: 1rem;
+    }
+
+    .chart-title {
+        font-size: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-banner {
+        min-height: 120px;
+    }
+
+    .header-title mark {
+        font-size: 1rem;
+    }
+
+    .charts-container {
+        padding: 0 0.5rem;
+    }
+
+    .chart-column {
+        padding: 0.75rem;
+        margin: 0.25rem 0;
+    }
 }

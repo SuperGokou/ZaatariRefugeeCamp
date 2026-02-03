@@ -11,62 +11,26 @@
 
     <!-- Custom Styles -->
     <link rel="stylesheet" href="css/style.css">
-
-    <style>
-        .header-banner {
-            width: 100vw;
-            height: 20vh;
-            margin-left: -9vw;
-            background-image: url('img/example.jpg');
-            background-size: cover;
-            background-position: center;
-        }
-
-        .header-title {
-            padding: 9vw 0 0 10vw;
-        }
-
-        .header-title mark {
-            background: rgba(255, 255, 255, 0.4);
-            color: saddlebrown;
-            padding: 0.2em 0.5em;
-        }
-
-        .charts-container {
-            width: 100vw;
-            margin-left: -9vw;
-        }
-
-        .chart-column {
-            text-align: center;
-        }
-
-        .chart-column-left {
-            border-right: medium dashed black;
-        }
-    </style>
 </head>
 <body>
 
-<div class="container">
+<div class="container-fluid p-0">
     <!-- Header Banner -->
-    <div class="row header-banner">
-        <h2 class="header-title">
+    <header class="row header-banner g-0">
+        <h1 class="header-title">
             <mark>Za'atari Refugee Camp</mark>
-        </h2>
-    </div>
+        </h1>
+    </header>
 
     <!-- Charts Section -->
-    <div class="row charts-container">
-        <div class="col chart-column chart-column-left">
-            <div id="areaChart">
-                <div id="tooltip" class="hidden"></div>
-            </div>
-        </div>
-        <div class="col chart-column">
-            <div id="barChart"></div>
-        </div>
-    </div>
+    <main class="row charts-container g-0 px-3">
+        <article class="col-md-6 chart-column chart-column-left" aria-label="Population trend chart">
+            <div id="areaChart" role="img" aria-label="Area chart showing camp population over time"></div>
+        </article>
+        <article class="col-md-6 chart-column" aria-label="Shelter distribution chart">
+            <div id="barChart" role="img" aria-label="Bar chart showing types of shelter"></div>
+        </article>
+    </main>
 </div>
 
 <!-- Bootstrap JS -->
