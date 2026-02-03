@@ -1,92 +1,88 @@
-// Load CSV file
-let parseTime = d3.timeParse("%Y-%m-%d");
+// Za'atari Refugee Camp Data Visualization
+// D3.js v7 - Population and Shelter Analysis
 
-let margin = {top: 30, right: 0, bottom: 30, left: 50};
-// Width and height as the inner dimensions of the chart area
-let width = 650 - margin.left - margin.right,
-    height = 580 - margin.top - margin.bottom;
+const parseTime = d3.timeParse("%Y-%m-%d");
 
-// Append SVG to the target div
-let areasvg = d3.select("#areaChart").append("svg")
+const margin = { top: 30, right: 0, bottom: 30, left: 50 };
+const width = 650 - margin.left - margin.right;
+const height = 580 - margin.top - margin.bottom;
+
+// Initialize Area Chart SVG
+const areaSvg = d3.select("#areaChart").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
     .append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
-// Append SVG to the target div
-let barsvg = d3.select("#barChart").append("svg")
+// Initialize Bar Chart SVG
+const barSvg = d3.select("#barChart").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
     .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    .attr("transform", `translate(${margin.left},${margin.top})`);
 
-d3.csv("data/zaatari-refugee-camp-population.csv  ", d => {
-    d.population = +d.population; // Convert Population to number
-    d.date = parseTime(d.date); // Convert to date
-
+// Load and process population data
+d3.csv("data/zaatari-refugee-camp-population.csv", d => {
+    d.population = +d.population;
+    d.date = parseTime(d.date);
     return d;
-}).then( data => {
-    // Analyze the dataset in the web console
-    console.log(data);
-    console.log("Lines: " + data.length)
-
-    DrawareaChart(data);
-
-
+}).then(data => {
+    drawAreaChart(data);
+}).catch(error => {
+    console.error("Error loading data:", error);
 });
-function DrawareaChart(data) {
 
-    let xScale = d3.scaleTime()
-        .domain([d3.min(data, d => d.date), d3.max(data, d => d.date)])
+function drawAreaChart(data) {
+    const xScale = d3.scaleTime()
+        .domain(d3.extent(data, d => d.date))
         .range([0, width]);
 
-// Y Scale - Linear Scale
-    let yScale = d3.scaleLinear()
+    const yScale = d3.scaleLinear()
         .domain([0, d3.max(data, d => d.population)])
         .range([height, 0]);
 
-    let area = d3.area()
+    // Area generator
+    const area = d3.area()
         .x(d => xScale(d.date))
         .y0(height)
         .y1(d => yScale(d.population));
 
-    let path = areasvg.append("path")
+    areaSvg.append("path")
         .datum(data)
         .attr("class", "area")
         .attr("d", area);
 
-
-    // Define the line generator function
-    let line = d3.line()
+    // Line overlay
+    const line = d3.line()
         .x(d => xScale(d.date))
         .y(d => yScale(d.population));
 
-// Append the line path
-    let linePath = areasvg.append("path")
+    areaSvg.append("path")
         .datum(data)
         .attr("class", "line")
         .attr("d", line);
 
-    let xAxis = d3.axisBottom(xScale)
+    // X Axis
+    const xAxis = d3.axisBottom(xScale)
         .ticks(d3.timeMonth.every(3))
         .tickFormat(d3.timeFormat("%b %Y"));
 
-    areasvg.append("g")
-        .attr("class", "axis-label")
+    areaSvg.append("g")
+        .attr("class", "axis x-axis")
         .attr("transform", `translate(0,${height})`)
         .call(xAxis)
         .selectAll("text")
         .style("text-anchor", "middle")
-        .attr("font-size", "10px")
+        .attr("font-size", "10px");
 
-    let yAxis = d3.axisLeft(yScale)
+    // Y Axis
+    areaSvg.append("g")
+        .attr("class", "axis y-axis")
+        .call(d3.axisLeft(yScale));
 
-    areasvg.append("g")
-        .attr("class", "axis")
-        .attr("transform", `translate(${0})`)
-        .call(yAxis);
-
-    areasvg.append("text")
+    // Chart title
+    areaSvg.append("text")
+        .attr("class", "chart-title")
         .attr("x", width / 2)
         .attr("y", 5)
         .attr("text-anchor", "middle")
@@ -94,9 +90,10 @@ function DrawareaChart(data) {
         .style("font-weight", "bold")
         .text("Camp Population");
 
-    let tooltipGroup = areasvg.append("g")
+    // Tooltip setup
+    const tooltipGroup = areaSvg.append("g")
         .attr("class", "tooltip")
-        .style("opacity", 0);  // Initialize it to be fully transparent (invisible)
+        .style("opacity", 0);
 
     tooltipGroup.append("line")
         .attr("class", "tooltip-line")
@@ -105,96 +102,93 @@ function DrawareaChart(data) {
         .style("stroke", "black")
         .style("stroke-width", "1px");
 
-    let tooltipDate = tooltipGroup.append("text")
+    const tooltipDate = tooltipGroup.append("text")
         .attr("class", "tooltip-date")
-        .attr("x", 10) // Offset from the line
+        .attr("x", 10)
         .attr("y", 45)
         .style("text-anchor", "start");
 
-    let tooltipPopulation = tooltipGroup.append("text")
+    const tooltipPopulation = tooltipGroup.append("text")
         .attr("class", "tooltip-population")
-        .attr("x", 10) // Offset from the line
-        .attr("y", 20) // Further above the date text
+        .attr("x", 10)
+        .attr("y", 20)
         .style("text-anchor", "start");
 
-    areasvg.append("rect")
+    // Invisible overlay for mouse tracking
+    const bisectDate = d3.bisector(d => d.date).left;
+
+    areaSvg.append("rect")
         .attr("class", "overlay")
         .attr("width", width)
         .attr("height", height)
-        .style("opacity", 0)  // Invisible overlay
-        .on("mousemove", mousemove);
+        .style("fill", "transparent")
+        .style("pointer-events", "all")
+        .on("mousemove", function(event) {
+            const x0 = xScale.invert(d3.pointer(event)[0]);
+            const i = bisectDate(data, x0, 1);
 
-    let bisectDate = d3.bisector(d => d.date).left;
+            // Clamp index to valid range
+            const clampedIndex = Math.min(Math.max(i, 0), data.length - 1);
+            const selectedData = data[clampedIndex];
 
-    function mousemove(event) {
-        let x0 = xScale.invert(d3.pointer(event)[0]);
-        let i = bisectDate(data, x0, 1);
-        let selectedData = data[i];
-
-        // Set the position of the tooltip elements
-        tooltipGroup.attr("transform", `translate(${xScale(selectedData.date)},0)`);
-        tooltipDate.text(d3.timeFormat("%Y-%m-%d")(selectedData.date));
-        tooltipPopulation.text(`Population: ${selectedData.population}`);
-
-        // Show the tooltip
-        tooltipGroup.style("opacity", 1);
-    }
-
-    areasvg.on("mouseout", function(event, d) {
-        tooltipGroup.style("opacity", 0);  // Hide the tooltip
-    });
-
+            if (selectedData) {
+                tooltipGroup.attr("transform", `translate(${xScale(selectedData.date)},0)`);
+                tooltipDate.text(d3.timeFormat("%Y-%m-%d")(selectedData.date));
+                tooltipPopulation.text(`Population: ${selectedData.population.toLocaleString()}`);
+                tooltipGroup.style("opacity", 1);
+            }
+        })
+        .on("mouseout", function() {
+            tooltipGroup.style("opacity", 0);
+        });
 }
 
-
+// Shelter distribution data (source: UNHCR shelter survey)
 const shelterData = [
-    {
-        type: 'Caravans',
-        percentage: 79.68
-    },
-    {
-        type: 'Combination',
-        percentage: 10.81
-    },
-    {
-        type: 'Tents',
-        percentage: 9.51
-    }
+    { type: "Caravans", percentage: 79.68 },
+    { type: "Combination", percentage: 10.81 },
+    { type: "Tents", percentage: 9.51 }
 ];
 
-DrawbarChart(shelterData)
+drawBarChart(shelterData);
 
-function DrawbarChart(data){
-    let yScale = d3.scaleLinear()
-        .domain([0, 100])  // Assuming max percentage is 100%
+function drawBarChart(data) {
+    const yScale = d3.scaleLinear()
+        .domain([0, 100])
         .range([height, 0]);
 
-    let xScale = d3.scaleBand()
+    const xScale = d3.scaleBand()
         .domain(data.map(d => d.type))
         .range([0, width])
-        .padding(0.2);  // Adds some padding between bars
+        .padding(0.2);
 
-    barsvg.selectAll(".bar")
+    // Draw bars
+    barSvg.selectAll(".bar")
         .data(data)
-        .enter().append("rect")
+        .enter()
+        .append("rect")
         .attr("class", "bar")
         .attr("x", d => xScale(d.type))
         .attr("width", xScale.bandwidth())
         .attr("y", d => yScale(d.percentage))
         .attr("height", d => height - yScale(d.percentage));
 
-    barsvg.append("g")
-        .attr("class", "y axis")
+    // Y Axis
+    barSvg.append("g")
+        .attr("class", "axis y-axis")
         .call(d3.axisLeft(yScale).tickFormat(d => d + "%"));
 
-    barsvg.append("g")
-        .attr("class", "x axis")
+    // X Axis
+    barSvg.append("g")
+        .attr("class", "axis x-axis")
         .attr("transform", `translate(0,${height})`)
         .call(d3.axisBottom(xScale))
         .selectAll("text")
         .attr("text-anchor", "middle");
 
-    barsvg.append("text")
+    // Chart title
+    barSvg.append("text")
+        .attr("class", "chart-title")
         .attr("x", width / 2)
         .attr("y", 5)
         .attr("text-anchor", "middle")
@@ -202,15 +196,14 @@ function DrawbarChart(data){
         .style("font-weight", "bold")
         .text("Type of Shelter");
 
-    barsvg.selectAll(".percentage-label")
+    // Percentage labels above bars
+    barSvg.selectAll(".percentage-label")
         .data(data)
         .enter()
         .append("text")
         .attr("class", "percentage-label")
-        .attr("x", d => xScale(d.type) + xScale.bandwidth() / 2) // Position at the center of the bar
-        .attr("y", d => yScale(d.percentage) - 5) // 5 pixels above the top of the bar
+        .attr("x", d => xScale(d.type) + xScale.bandwidth() / 2)
+        .attr("y", d => yScale(d.percentage) - 5)
         .attr("text-anchor", "middle")
         .text(d => d.percentage + "%");
-
 }
-
