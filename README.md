@@ -2,6 +2,7 @@
 
 An interactive data visualization project exploring population dynamics and shelter distribution at the Za'atari Refugee Camp in Jordan. Built with D3.js as part of the CS171 data visualization course.
 
+demo: https://supergokou.github.io/Za-atari-Refugee-Camp/
 ---
 
 ## Overview
